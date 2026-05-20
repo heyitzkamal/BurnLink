@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog Admin Login</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: Arial, sans-serif;
+      background: #0a0a0a; 
+      color: #fff; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .login-box {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      padding: 40px;
+      border-radius: 4px;
+      width: 100%;
+      max-width: 400px;
+    }
+    h1 { font-size: 24px; margin-bottom: 10px; }
+    p { color: #888; margin-bottom: 30px; }
+    .form-group { margin-bottom: 20px; }
+    label { display: block; margin-bottom: 8px; font-weight: bold; }
+    input { 
+      width: 100%; 
+      padding: 10px; 
+      background: #0a0a0a; 
+      border: 1px solid #444; 
+      color: #fff; 
+      border-radius: 2px;
+      font-family: monospace;
+    }
+    button { 
+      width: 100%; 
+      padding: 12px; 
+      background: #eb583d; 
+      color: #fff; 
+      border: none; 
+      border-radius: 2px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 16px;
+    }
+    button:hover { background: #d94a2a; }
+    .msg { 
+      padding: 10px; 
+      margin-bottom: 15px; 
+      border-radius: 2px; 
+      display: none;
+    }
+    .error { background: #2a0000; color: #ff6b6b; border: 1px solid #4a0000; }
+    .success { background: #001a00; color: #51cf66; border: 1px solid #003300; }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <h1>Blog Admin</h1>
+    <p>Enter your admin token</p>
+    
+    <div id="errorMsg" class="msg error"></div>
+    <div id="successMsg" class="msg success"></div>
+
+    <form id="loginForm">
+      <div class="form-group">
+        <label>Admin Token:</label>
+        <input type="password" id="token" required placeholder="Enter token">
+      </div>
+      <button type="submit">Login</button>
+    </form>
+  </div>
+
+  <script nonce="<%= cspNonce %>">
+    const form = document.getElementById('loginForm');
+    const tokenInput = document.getElementById('token');
+    const errorMsg = document.getElementById('errorMsg');
+    const successMsg = document.getElementById('successMsg');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const token = tokenInput.value.trim();
+      
+      errorMsg.style.display = 'none';
+      successMsg.style.display = 'none';
+      
+      if (!token) {
+        errorMsg.textContent = 'Please enter a token';
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      try {
+        console.log('Sending login request...');
+        
+        const res = await fetch('/api/blog/admin/test-token', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        console.log('Response status:', res.status);
+        const data = await res.json();
+        console.log('Response:', data);
+
+        if (res.status === 200 && data.success) {
+          localStorage.setItem('blog_admin_token', token);
+          successMsg.textContent = '✓ Login successful! Redirecting...';
+          successMsg.style.display = 'block';
+          setTimeout(() => {
+            window.location.href = '/blog/admin/dashboard';
+          }, 1000);
+        } else {
+          errorMsg.textContent = data.error || 'Login failed';
+          errorMsg.style.display = 'block';
+        }
+      } catch (err) {
+        console.error('Error:', err);
+        errorMsg.textContent = 'Connection error: ' + err.message;
+        errorMsg.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>

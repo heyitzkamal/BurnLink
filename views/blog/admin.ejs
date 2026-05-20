@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blog Admin — BurnLink</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0a0a0a; color: #fff; line-height: 1.6; overflow-x: hidden;
+    }
+
+    /* ── Layout ── */
+    .admin-container { display: grid; grid-template-columns: 250px 1fr; min-height: 100vh; }
+    
+    /* ── Sidebar ── */
+    .admin-sidebar {
+      background: #0f0f0f; border-right: 1px solid #1e1e1e; padding: 2rem 0;
+      position: sticky; top: 0; height: 100vh; overflow-y: auto;
+    }
+    .admin-sidebar-title {
+      font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.12em;
+      color: #666; padding: 0 1.5rem; margin-bottom: 1.5rem; font-weight: 700;
+    }
+    .admin-nav { display: flex; flex-direction: column; gap: 0.5rem; }
+    .admin-nav-item {
+      padding: 0.75rem 1.5rem; color: #888; text-decoration: none;
+      transition: all 0.2s; font-size: 0.9rem; border-left: 3px solid transparent;
+      cursor: pointer; background: transparent; border: none; width: 100%; text-align: left;
+    }
+    .admin-nav-item:hover { color: #fff; border-left-color: #eb583d; background: #1a1a1a; }
+    .admin-nav-item.active { color: #eb583d; border-left-color: #eb583d; background: #1a0a0a; }
+
+    /* ── Header ── */
+    .admin-header {
+      background: #0f0f0f; border-bottom: 1px solid #1e1e1e; padding: 1.5rem;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .admin-header h1 { font-size: 1.5rem; font-weight: 800; }
+    .admin-user { display: flex; align-items: center; gap: 1rem; }
+    .admin-btn { padding: 0.6rem 1.2rem; background: #111; color: #fff; border: 1px solid #222; cursor: pointer; border-radius: 2px; transition: all 0.2s; font-weight: 600; }
+    .admin-btn:hover { border-color: #eb583d; color: #eb583d; }
+    .admin-btn-danger { color: #ff6b6b; border-color: #2a0000; background: #1a0000; }
+    .admin-btn-danger:hover { border-color: #ff6b6b; }
+
+    /* ── Main Content ── */
+    .admin-content { padding: 2rem; overflow-y: auto; }
+
+    /* ── Panel ── */
+    .admin-panel {
+      background: #0f0f0f; border: 1px solid #1e1e1e; padding: 2rem;
+      margin-bottom: 2rem; border-radius: 4px;
+    }
+    .admin-panel h2 { font-size: 1.2rem; margin-bottom: 1.5rem; font-weight: 700; }
+
+    /* ── Dashboard Stats ── */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem; margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: linear-gradient(135deg, #1a0a0a, #0f0f0f); border: 1px solid #2a1010;
+      padding: 1.5rem; border-radius: 4px;
+    }
+    .stat-label { font-size: 0.8rem; color: #666; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; }
+    .stat-value { font-size: 2rem; font-weight: 800; color: #eb583d; }
+
+    /* ── Form ── */
+    .form-group { margin-bottom: 1.5rem; }
+    .form-group label {
+      display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;
+      text-transform: uppercase; letter-spacing: 0.05em; color: #666;
+    }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%; padding: 0.8rem 1rem; background: #111; border: 1px solid #222;
+      color: #fff; font-family: inherit; border-radius: 2px; transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      outline: none; border-color: #eb583d;
+    }
+    .form-group textarea { resize: vertical; min-height: 120px; }
+
+    /* ── Rich Editor ── */
+    .editor-toolbar {
+      background: #111; border: 1px solid #222; border-bottom: none;
+      padding: 0.75rem; display: flex; gap: 0.5rem; flex-wrap: wrap;
+    }
+    .editor-button {
+      padding: 0.5rem 0.75rem; background: #1a1a1a; border: 1px solid #222;
+      color: #888; cursor: pointer; font-size: 0.8rem; transition: all 0.2s;
+      border-radius: 2px;
+    }
+    .editor-button:hover { border-color: #eb583d; color: #eb583d; }
+    .editor-content {
+      background: #111; border: 1px solid #222; padding: 1rem;
+      min-height: 300px; max-height: 600px; overflow-y: auto; color: #fff;
+    }
+
+    /* ── Posts Table ── */
+    .posts-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .posts-table th {
+      background: #111; padding: 1rem; text-align: left; border-bottom: 1px solid #222;
+      font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em;
+      color: #666;
+    }
+    .posts-table td { padding: 1rem; border-bottom: 1px solid #1a1a1a; }
+    .posts-table tr:hover { background: #0f0f0f; }
+    .post-title { font-weight: 600; color: #fff; }
+    .post-status {
+      display: inline-block; padding: 0.3rem 0.6rem; font-size: 0.7rem;
+      font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 2px;
+    }
+    .status-published { background: rgba(76, 175, 80, 0.1); color: #4caf50; }
+    .status-draft { background: rgba(255, 152, 0, 0.1); color: #ff9800; }
+    .status-archived { background: rgba(158, 158, 158, 0.1); color: #9e9e9e; }
+
+    .posts-actions { display: flex; gap: 0.5rem; }
+    .action-btn {
+      padding: 0.4rem 0.7rem; background: #1a1a1a; border: 1px solid #222;
+      color: #666; text-decoration: none; cursor: pointer; font-size: 0.75rem;
+      transition: all 0.2s; border-radius: 2px;
+    }
+    .action-btn:hover { border-color: #eb583d; color: #eb583d; }
+
+    /* ── Tabs ── */
+    .admin-tabs {
+      display: flex; gap: 1rem; border-bottom: 1px solid #1e1e1e; margin-bottom: 2rem;
+    }
+    .admin-tab {
+      padding: 1rem; color: #666; border-bottom: 2px solid transparent;
+      cursor: pointer; transition: all 0.2s; background: none; border: none;
+      font-size: 0.9rem; font-weight: 600;
+    }
+    .admin-tab:hover { color: #fff; }
+    .admin-tab.active { color: #eb583d; border-bottom-color: #eb583d; }
+    .admin-tab-content { display: none; }
+    .admin-tab-content.active { display: block; }
+
+    /* ── Alert ── */
+    .alert {
+      padding: 1rem; margin-bottom: 1.5rem; border-radius: 2px; border-left: 3px solid;
+      font-size: 0.9rem;
+    }
+    .alert-success { background: #0d1a0a; border-left-color: #4caf50; color: #90ee90; }
+    .alert-error { background: #1a0a0a; border-left-color: #ff6b6b; color: #ff9999; }
+    .alert-info { background: #0a0d1a; border-left-color: #2196f3; color: #90caf9; }
+
+    @media (max-width: 768px) {
+      .admin-container { grid-template-columns: 1fr; }
+      .admin-sidebar { position: fixed; left: -250px; height: 100vh; z-index: 99; }
+      .stats-grid { grid-template-columns: 1fr; }
+      .posts-table { font-size: 0.8rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <aside class="admin-sidebar">
+      <div class="admin-sidebar-title">Blog Admin</div>
+      <nav class="admin-nav">
+        <button class="admin-nav-item active" data-tab="dashboard">Dashboard</button>
+        <button class="admin-nav-item" data-tab="posts">All Posts</button>
+        <button class="admin-nav-item" data-tab="create">Create Post</button>
+        <button class="admin-nav-item" data-tab="analytics">Analytics</button>
+        <hr style="margin: 1rem 0; border: none; border-top: 1px solid #1a1a1a;">
+        <a href="/" class="admin-nav-item">← Back to Site</a>
+      </nav>
+    </aside>
+
+    <main class="admin-content">
+      <div class="admin-header">
+        <h1>Blog Management</h1>
+        <div class="admin-user">
+          <span>BurnLink Admin</span>
+        </div>
+      </div>
+
+      <!-- Dashboard Tab -->
+      <div id="dashboard" class="admin-tab-content active">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Published Posts</div>
+            <div class="stat-value" id="publishedCount">-</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Draft Posts</div>
+            <div class="stat-value" id="draftCount">-</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Views</div>
+            <div class="stat-value" id="viewCount">-</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Visitor Interactions</div>
+            <div class="stat-value" id="analyticsCount">-</div>
+          </div>
+        </div>
+
+        <div class="admin-panel">
+          <h2>Recent Activity</h2>
+          <p style="color: #888; font-size: 0.9rem;">Analytics are tracked and displayed here. Monitor your blog's performance and engagement metrics.</p>
+        </div>
+      </div>
+
+      <!-- All Posts Tab -->
+      <div id="posts" class="admin-tab-content">
+        <div class="admin-panel">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 style="margin-bottom: 0;">All Posts</h2>
+            <button id="newPostBtn" class="admin-btn">+ New Post</button>
+          </div>
+
+          <div class="admin-tabs" style="margin-top: -2rem; margin-bottom: 2rem;">
+            <button class="admin-tab active" data-filter="all">All</button>
+            <button class="admin-tab" data-filter="published">Published</button>
+            <button class="admin-tab" data-filter="draft">Drafts</button>
+          </div>
+
+          <table class="posts-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Views</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="postsTableBody">
+              <tr>
+                <td colspan="6" style="text-align: center; color: #666; padding: 2rem;">Loading posts...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Create Post Tab -->
+      <div id="create" class="admin-tab-content">
+        <div class="admin-panel">
+          <h2>Create New Blog Post</h2>
+
+          <form id="createPostForm" style="display: grid; gap: 1.5rem;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+              <div class="form-group">
+                <label>Title *</label>
+                <input type="text" id="postTitle" name="title" placeholder="Article title" required />
+              </div>
+              <div class="form-group">
+                <label>Slug *</label>
+                <input type="text" id="postSlug" name="slug" placeholder="auto-generated-slug" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Excerpt *</label>
+              <textarea id="postExcerpt" name="excerpt" placeholder="Short summary of the article" required></textarea>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+              <div class="form-group">
+                <label>Category *</label>
+                <select id="postCategory" name="category" required>
+                  <option value="">Select category</option>
+                  <option value="updates">Updates</option>
+                  <option value="security">Security</option>
+                  <option value="features">Features</option>
+                  <option value="tutorials">Tutorials</option>
+                  <option value="news">News</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Reading Time (min)</label>
+                <input type="number" id="postReadingTime" name="reading_time" placeholder="5" min="1" />
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+              <div class="form-group">
+                <label>Author</label>
+                <input type="text" id="postAuthor" name="author" value="BurnLink Team" />
+              </div>
+              <div class="form-group">
+                <label>Featured Image URL</label>
+                <input type="url" id="postImage" name="featured_image" placeholder="https://..." />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Tags (comma-separated)</label>
+              <input type="text" id="postTags" name="tags" placeholder="encryption, security, updates" />
+            </div>
+
+            <div class="form-group">
+              <label>Content *</label>
+              <div class="editor-toolbar">
+                <button type="button" class="editor-button markdown-btn" data-before="**" data-after="**">Bold</button>
+                <button type="button" class="editor-button markdown-btn" data-before="*" data-after="*">Italic</button>
+                <button type="button" class="editor-button markdown-btn" data-before="# " data-after="">Heading</button>
+                <button type="button" class="editor-button markdown-btn" data-before="- " data-after="">List</button>
+                <button type="button" class="editor-button markdown-btn" data-before="> " data-after="">Quote</button>
+                <button type="button" class="editor-button markdown-btn" data-before="`" data-after="`">Code</button>
+                <button type="button" class="editor-button markdown-btn" data-before="[" data-after="](url)">Link</button>
+              </div>
+              <textarea id="postContent" name="content" placeholder="Write your article here... Supports Markdown!" required></textarea>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+              <div class="form-group">
+                <label>Status</label>
+                <select id="postStatus" name="status">
+                  <option value="draft">Draft</option>
+                  <option value="published">Published</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 0.5rem; text-transform: none; margin-bottom: 0;">
+                  <input type="checkbox" id="postFeatured" name="featured" /> Feature this post
+                </label>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+              <button type="button" id="resetFormBtn" class="admin-btn">Reset</button>
+              <button type="submit" class="admin-btn" style="border-color: #eb583d; color: #eb583d;">Publish Post</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Analytics Tab -->
+      <div id="analytics" class="admin-tab-content">
+        <div class="admin-panel">
+          <h2>Analytics Overview</h2>
+          <p style="color: #888; font-size: 0.9rem; margin-bottom: 1.5rem;">Track your blog's performance, visitor engagement, and popular posts.</p>
+
+          <!-- Analytics Summary Stats -->
+          <div class="stats-grid" id="analyticsSummary">
+            <div class="stat-card">
+              <div class="stat-label">Total Views</div>
+              <div class="stat-value" id="analyticsViews">-</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Avg Views/Post</div>
+              <div class="stat-value" id="analyticsAvg">-</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Visitor Events</div>
+              <div class="stat-value" id="analyticsEvents">-</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Published Posts</div>
+              <div class="stat-value" id="analyticsPosts">-</div>
+            </div>
+          </div>
+
+          <!-- Charts Section -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem;">
+            <!-- Views Over Time -->
+            <div style="background: #111; border: 1px solid #222; padding: 1.5rem; border-radius: 4px;">
+              <h3 style="font-size: 0.9rem; font-weight: 600; margin-bottom: 1rem; color: #fff;">Visitor Activity (30 days)</h3>
+              <div style="position: relative; height: 250px;">
+                <canvas id="eventsChart" style="max-height: 250px;"></canvas>
+              </div>
+            </div>
+
+            <!-- Views by Category -->
+            <div style="background: #111; border: 1px solid #222; padding: 1.5rem; border-radius: 4px;">
+              <h3 style="font-size: 0.9rem; font-weight: 600; margin-bottom: 1rem; color: #fff;">Views by Category</h3>
+              <div style="position: relative; height: 250px;">
+                <canvas id="categoryChart" style="max-height: 250px;"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top Posts Table -->
+          <div style="margin-top: 2rem; background: #111; border: 1px solid #222; padding: 1.5rem; border-radius: 4px;">
+            <h3 style="font-size: 0.9rem; font-weight: 600; margin-bottom: 1rem; color: #fff;">Top Posts by Views</h3>
+            <table class="posts-table" style="width: 100%;">
+              <thead>
+                <tr>
+                  <th>Post Title</th>
+                  <th>Category</th>
+                  <th>Views</th>
+                  <th>Avg Views per Day</th>
+                </tr>
+              </thead>
+              <tbody id="topPostsTable">
+                <tr>
+                  <td colspan="4" style="text-align: center; color: #666; padding: 2rem;">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Posts by Category -->
+          <div style="margin-top: 2rem; background: #111; border: 1px solid #222; padding: 1.5rem; border-radius: 4px;">
+            <h3 style="font-size: 0.9rem; font-weight: 600; margin-bottom: 1rem; color: #fff;">Posts by Category</h3>
+            <div id="categoryBreakdown" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+              <p style="color: #666;">Loading...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Chart.js Library -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" nonce="<%= cspNonce %>"></script>
+
+  <script nonce="<%= cspNonce %>">
+    const API_TOKEN = localStorage.getItem("blog_admin_token") || prompt("Enter admin token:");
+    const API_BASE = "/api/blog";
+
+    // Tab switching
+    function switchTab(tabName) {
+      console.log(`Switching to tab: ${tabName}`);
+      
+      try {
+        document.querySelectorAll(".admin-tab-content").forEach((el) => {
+          el.classList.remove("active");
+        });
+        document.querySelectorAll(".admin-nav-item").forEach((el) => {
+          el.classList.remove("active");
+        });
+        
+        const tabEl = document.getElementById(tabName);
+        if (tabEl) {
+          tabEl.classList.add("active");
+          console.log(`Success: Tab ${tabName} is now visible`);
+        } else {
+          console.error(`Error: Tab element not found: #${tabName}`);
+          return;
+        }
+        
+        const btnEl = document.querySelector(`[data-tab="${tabName}"]`);
+        if (btnEl) {
+          btnEl.classList.add("active");
+          console.log(`Success: Button ${tabName} is now highlighted`);
+        } else {
+          console.error(`Error: Button not found: [data-tab="${tabName}"]`);
+        }
+
+        // Load analytics data when switching to analytics tab
+        if (tabName === "analytics") {
+          loadAnalytics();
+        }
+      } catch (err) {
+        console.error(`Error in switchTab: ${err.message}`);
+      }
+    }
+
+    // Initialize when DOM is ready
+    function initializeAdmin() {
+      console.log("=== Starting Admin Dashboard Initialization ===");
+      
+      try {
+        // Step 1: Find and attach click listeners to nav items
+        const navItems = document.querySelectorAll(".admin-nav-item[data-tab]");
+        console.log(`Step 1: Found ${navItems.length} nav buttons`);
+        
+        if (navItems.length === 0) {
+          console.error("ERROR: No nav items found!");
+          return;
+        }
+        
+        navItems.forEach((el, index) => {
+          const tabName = el.dataset.tab;
+          console.log(`  Button ${index + 1}: "${el.textContent.trim()}" (data-tab="${tabName}")`);
+          
+          el.addEventListener("click", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log(`CLICKED: ${tabName}`);
+            switchTab(tabName);
+          });
+        });
+        
+        console.log(`Step 2: Event listeners attached successfully`);
+        
+        // Step 3: Load initial data (don't let errors break the UI)
+        console.log(`Step 3: Loading dashboard and posts...`);
+        loadDashboard().catch(err => console.error("Dashboard load failed:", err));
+        loadPosts().catch(err => console.error("Posts load failed:", err));
+        
+        // Step 4: Setup additional listeners
+        setupAllListeners();
+        
+        console.log("=== Admin Dashboard Initialization Complete ===\n");
+        
+      } catch (err) {
+        console.error("CRITICAL ERROR during initialization:", err);
+      }
+    }
+
+    // Wait for DOM to be ready
+    if (document.readyState === "loading") {
+      console.log("DOM is loading, waiting for DOMContentLoaded...");
+      document.addEventListener("DOMContentLoaded", initializeAdmin);
+    } else {
+      console.log("DOM already loaded, initializing immediately...");
+      setTimeout(initializeAdmin, 0);
+    }
+
+    // Load dashboard
+    async function loadDashboard() {
+      try {
+        const res = await fetch(`${API_BASE}/admin/dashboard`, {
+          headers: { Authorization: `Bearer ${API_TOKEN}` },
+        });
+        
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+        
+        const data = await res.json();
+        console.log("Dashboard loaded:", data);
+
+        document.getElementById("publishedCount").textContent = data.totalPosts || 0;
+        document.getElementById("draftCount").textContent = data.draftPosts || 0;
+        document.getElementById("viewCount").textContent = (data.totalViews || 0).toLocaleString();
+        document.getElementById("analyticsCount").textContent = data.analyticsCount || 0;
+      } catch (err) {
+        console.error("Failed to load dashboard:", err);
+        alert("Error loading dashboard: " + err.message);
+      }
+    }
+
+    // Load posts
+    async function loadPosts() {
+      try {
+        const res = await fetch(`${API_BASE}/admin/posts`, {
+          headers: { Authorization: `Bearer ${API_TOKEN}` },
+        });
+        
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+        
+        const posts = await res.json();
+        console.log("Posts loaded:", posts);
+
+        if (!Array.isArray(posts)) {
+          throw new Error("Invalid response format");
+        }
+
+        const tbody = document.getElementById("postsTableBody");
+        
+        if (posts.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666; padding: 2rem;">No posts yet. Create your first post!</td></tr>';
+        } else {
+          tbody.innerHTML = posts
+            .map(
+              (post) => `
+            <tr>
+              <td class="post-title">${post.title}</td>
+              <td>${post.category}</td>
+              <td><span class="post-status status-${post.status}">${post.status}</span></td>
+              <td>${new Date(post.created_at).toLocaleDateString()}</td>
+              <td>${(post.views_count || 0).toLocaleString()}</td>
+            <td class="posts-actions">
+              <button class="action-btn edit-btn" data-post-id="${post.id}">Edit</button>
+              <button class="action-btn delete-btn" data-post-id="${post.id}">Delete</button>
+            </td>
+          </tr>
+        `
+            )
+            .join("");
+          
+          // Attach event listeners to Edit and Delete buttons
+          attachPostActionListeners();
+        }
+      } catch (err) {
+        console.error("Failed to load posts:", err);
+        const tbody = document.getElementById("postsTableBody");
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ff9999; padding: 2rem;">Error: ${err.message}</td></tr>`;
+      }
+    }
+
+    // Attach listeners to post action buttons
+    function attachPostActionListeners() {
+      // Edit button listeners
+      document.querySelectorAll(".edit-btn").forEach(btn => {
+        btn.addEventListener("click", function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          const postId = this.dataset.postId;
+          console.log("Edit button clicked for post:", postId);
+          editPost(postId);
+        });
+      });
+
+      // Delete button listeners
+      document.querySelectorAll(".delete-btn").forEach(btn => {
+        btn.addEventListener("click", function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          const postId = this.dataset.postId;
+          console.log("Delete button clicked for post:", postId);
+          deletePost(postId);
+        });
+      });
+    }
+
+    // Create/Update post
+    function setupFormListener() {
+      const form = document.getElementById("createPostForm");
+      if (!form) {
+        console.error("ERROR: Create post form not found!");
+        return;
+      }
+      
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(e.target);
+        const postId = form.dataset.postId; // Check if editing
+        const data = {
+          title: formData.get("title"),
+          slug: formData.get("slug") || generateSlug(formData.get("title")),
+          excerpt: formData.get("excerpt"),
+          content: formData.get("content"),
+          category: formData.get("category"),
+          status: formData.get("status"),
+          featured: formData.get("featured") === "on",
+          author: formData.get("author"),
+          featured_image: formData.get("featured_image"),
+          reading_time: parseInt(formData.get("reading_time")) || null,
+          tags: formData
+            .get("tags")
+            .split(",")
+            .map((t) => t.trim())
+            .filter((t) => t),
+        };
+
+        console.log("Submitting post:", data);
+
+        try {
+          // Use PUT for update, POST for create
+          const url = postId ? `${API_BASE}/admin/posts/${postId}` : `${API_BASE}/admin/posts`;
+          const method = postId ? "PUT" : "POST";
+
+          const res = await fetch(url, {
+            method: method,
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${API_TOKEN}`,
+            },
+            body: JSON.stringify(data),
+          });
+
+          console.log("Response status:", res.status);
+          const responseData = await res.json();
+          console.log("Response data:", responseData);
+
+          if (res.ok) {
+            const message = postId ? "Post updated successfully!" : "Post published successfully!";
+            alert(message);
+            e.target.reset();
+            delete form.dataset.postId; // Clear the post ID after update
+            
+            // Reset button text
+            const submitBtn = document.querySelector("#createPostForm button[type='submit']");
+            if (submitBtn) {
+              submitBtn.textContent = "Publish Post";
+            }
+            
+            loadPosts();
+            switchTab("posts");
+          } else {
+            alert("Failed to " + (postId ? "update" : "publish") + " post:\n" + (responseData.error || "Unknown error"));
+          }
+        } catch (err) {
+          console.error("Error:", err);
+          alert("Error publishing post:\n" + err.message);
+        }
+      });
+      
+      console.log("Form listener attached");
+    }
+
+    // Attach form listener after DOM is ready
+    function setupAllListeners() {
+      console.log("=== Setting up additional listeners ===");
+      
+      try {
+        setupFormListener();
+        
+        // Reset button
+        const resetBtn = document.getElementById("resetFormBtn");
+        console.log(`Looking for Reset button... ${resetBtn ? "FOUND" : "NOT FOUND"}`);
+        if (resetBtn) {
+          resetBtn.addEventListener("click", function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log("Reset button clicked!");
+            const form = document.getElementById("createPostForm");
+            form.reset();
+            delete form.dataset.postId; // Clear the post ID
+            
+            // Reset button text
+            const submitBtn = document.querySelector("#createPostForm button[type='submit']");
+            if (submitBtn) {
+              submitBtn.textContent = "Publish Post";
+            }
+          });
+          console.log("Reset button listener attached");
+        }
+        
+        // New Post button
+        const newPostBtn = document.getElementById("newPostBtn");
+        console.log(`Looking for New Post button... ${newPostBtn ? "FOUND" : "NOT FOUND"}`);
+        if (newPostBtn) {
+          newPostBtn.addEventListener("click", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log("New Post button clicked!");
+            switchTab("create");
+          });
+          console.log("New Post button listener attached");
+        } else {
+          console.error("ERROR: New Post button element not found!");
+        }
+        
+        // Markdown editor buttons
+        const markdownBtns = document.querySelectorAll(".markdown-btn");
+        console.log(`Looking for markdown buttons... Found: ${markdownBtns.length}`);
+        
+        if (markdownBtns.length === 0) {
+          console.error("ERROR: No markdown buttons found!");
+        }
+        
+        markdownBtns.forEach((btn, idx) => {
+          console.log(`Attaching listener to markdown button ${idx + 1}: ${btn.textContent.trim()}`);
+          btn.addEventListener("click", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const before = this.dataset.before || "";
+            const after = this.dataset.after || "";
+            console.log(`Markdown button clicked: ${this.textContent.trim()} (before="${before}", after="${after}")`);
+            insertMarkdown(before, after);
+          });
+        });
+        console.log("Markdown button listeners attached");
+        
+        // Auto-generate slug
+        const titleInput = document.querySelector('input[name="title"]');
+        if (titleInput) {
+          titleInput.addEventListener("input", function () {
+            const slugInput = document.querySelector('input[name="slug"]');
+            if (slugInput && !slugInput.value) {
+              slugInput.value = generateSlug(this.value);
+            }
+          });
+          console.log("Auto-slug listener attached");
+        }
+        
+        console.log("=== All listeners setup complete ===\n");
+        
+      } catch (err) {
+        console.error("ERROR in setupAllListeners:", err);
+      }
+    }
+
+
+    function generateSlug(title) {
+      return title
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-");
+    }
+
+    function insertMarkdown(before, after) {
+      const editor = document.getElementById("postContent");
+      const start = editor.selectionStart;
+      const end = editor.selectionEnd;
+      const selected = editor.value.substring(start, end);
+      const replacement = before + selected + after;
+
+      editor.value = editor.value.substring(0, start) + replacement + editor.value.substring(end);
+      editor.focus();
+      editor.setSelectionRange(start + before.length, start + before.length + selected.length);
+    }
+
+    function resetForm() {
+      document.getElementById("createPostForm").reset();
+    }
+
+    async function deletePost(id) {
+      if (!confirm("Are you sure you want to delete this post?")) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/admin/posts/${id}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${API_TOKEN}` },
+        });
+
+        const responseData = await res.json();
+
+        if (res.ok) {
+          alert("Post deleted successfully!");
+          loadPosts();
+        } else {
+          alert("Failed to delete post:\n" + (responseData.error || "Unknown error"));
+        }
+      } catch (err) {
+        console.error("Error:", err);
+        alert("Error deleting post:\n" + err.message);
+      }
+    }
+
+    async function editPost(id) {
+      try {
+        const res = await fetch(`${API_BASE}/admin/posts`, {
+          headers: { Authorization: `Bearer ${API_TOKEN}` },
+        });
+
+        const posts = await res.json();
+        const post = posts.find(p => p.id === id);
+
+        if (!post) {
+          alert("Post not found!");
+          return;
+        }
+
+        // Populate form with post data
+        document.getElementById("postTitle").value = post.title || "";
+        document.getElementById("postSlug").value = post.slug || "";
+        document.getElementById("postExcerpt").value = post.excerpt || "";
+        document.getElementById("postContent").value = post.content || "";
+        document.getElementById("postCategory").value = post.category || "updates";
+        document.getElementById("postStatus").value = post.status || "draft";
+        document.getElementById("postFeatured").checked = post.featured || false;
+        document.getElementById("postAuthor").value = post.author || "BurnLink Team";
+        document.getElementById("postImage").value = post.featured_image || "";
+        document.getElementById("postTags").value = (post.tags || []).join(", ");
+
+        // Store the post ID for update
+        document.getElementById("createPostForm").dataset.postId = id;
+
+        // Switch to Create Post tab
+        switchTab("create");
+
+        // Scroll to form
+        document.getElementById("createPostForm").scrollIntoView({ behavior: "smooth" });
+
+        // Change button text
+        const submitBtn = document.querySelector("#createPostForm button[type='submit']");
+        if (submitBtn) {
+          submitBtn.textContent = "Update Post";
+        }
+      } catch (err) {
+        console.error("Error loading post for edit:", err);
+        alert("Failed to load post:\n" + err.message);
+      }
+    }
+
+    // Initialize is now called above
+
+    // Load and display analytics
+    let analyticsCharts = {};
+
+    async function loadAnalytics() {
+      try {
+        console.log("Loading analytics...");
+        const res = await fetch(`${API_BASE}/admin/analytics`, {
+          headers: { Authorization: `Bearer ${API_TOKEN}` },
+        });
+
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+
+        const data = await res.json();
+        console.log("Analytics data:", data);
+
+        // Update summary stats
+        document.getElementById("analyticsViews").textContent = (data.summary.totalViews || 0).toLocaleString();
+        document.getElementById("analyticsAvg").textContent = (data.summary.averageViewsPerPost || 0).toLocaleString();
+        document.getElementById("analyticsEvents").textContent = (data.summary.totalAnalyticsEvents || 0).toLocaleString();
+        document.getElementById("analyticsPosts").textContent = (data.summary.totalPosts || 0).toLocaleString();
+
+        // Render Events Over Time Chart
+        renderEventsChart(data.eventsByDate);
+
+        // Render Category Chart
+        renderCategoryChart(data.viewsByCategory);
+
+        // Render Top Posts Table
+        renderTopPostsTable(data.topPosts);
+
+        // Render Category Breakdown
+        renderCategoryBreakdown(data.postsByCategory);
+
+      } catch (err) {
+        console.error("Failed to load analytics:", err);
+        document.getElementById("analyticsSummary").innerHTML = `<div style="color: #ff9999; padding: 1rem;">Error loading analytics: ${err.message}</div>`;
+      }
+    }
+
+    function renderEventsChart(eventsByDate) {
+      const ctx = document.getElementById("eventsChart");
+      if (!ctx) return;
+
+      // Destroy existing chart if it exists
+      if (analyticsCharts.events) {
+        analyticsCharts.events.destroy();
+      }
+
+      const dates = eventsByDate.map(d => d.date.substring(5)); // MM-DD format
+      const events = eventsByDate.map(d => d.events);
+
+      analyticsCharts.events = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: dates,
+          datasets: [{
+            label: "Visitor Events",
+            data: events,
+            borderColor: "#eb583d",
+            backgroundColor: "rgba(235, 88, 61, 0.1)",
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: "#eb583d",
+            pointBorderColor: "#fff",
+            pointRadius: 4,
+            pointHoverRadius: 6,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false,
+            },
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: "#1a1a1a" },
+              ticks: { color: "#888" },
+            },
+            x: {
+              grid: { display: false },
+              ticks: { color: "#888" },
+            },
+          },
+        },
+      });
+    }
+
+    function renderCategoryChart(viewsByCategory) {
+      const ctx = document.getElementById("categoryChart");
+      if (!ctx) return;
+
+      // Destroy existing chart if it exists
+      if (analyticsCharts.category) {
+        analyticsCharts.category.destroy();
+      }
+
+      const categories = Object.keys(viewsByCategory);
+      const views = Object.values(viewsByCategory);
+      const colors = [
+        "#eb583d",
+        "#ff9800",
+        "#4caf50",
+        "#2196f3",
+        "#9c27b0",
+        "#00bcd4",
+      ];
+
+      analyticsCharts.category = new Chart(ctx, {
+        type: "doughnut",
+        data: {
+          labels: categories,
+          datasets: [{
+            data: views,
+            backgroundColor: colors.slice(0, categories.length),
+            borderColor: "#0f0f0f",
+            borderWidth: 2,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: "bottom",
+              labels: {
+                color: "#888",
+                padding: 15,
+                font: { size: 12 },
+              },
+            },
+          },
+        },
+      });
+    }
+
+    function renderTopPostsTable(topPosts) {
+      const tbody = document.getElementById("topPostsTable");
+      if (!tbody) return;
+
+      if (topPosts.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #666; padding: 2rem;">No posts with views yet.</td></tr>';
+        return;
+      }
+
+      const today = new Date();
+      tbody.innerHTML = topPosts
+        .map(post => {
+          // Estimate avg views per day (assuming published ~30 days ago - this is a rough estimate)
+          const avgPerDay = Math.ceil(post.views / 30);
+          return `
+            <tr>
+              <td class="post-title">
+                <a href="/blog/${post.slug}" style="color: #eb583d; text-decoration: none;" target="_blank">
+                  ${post.title}
+                </a>
+              </td>
+              <td>${post.category}</td>
+              <td><strong>${post.views.toLocaleString()}</strong></td>
+              <td>${avgPerDay.toLocaleString()}</td>
+            </tr>
+          `;
+        })
+        .join("");
+    }
+
+    function renderCategoryBreakdown(postsByCategory) {
+      const container = document.getElementById("categoryBreakdown");
+      if (!container) return;
+
+      const categories = Object.entries(postsByCategory);
+      if (categories.length === 0) {
+        container.innerHTML = '<p style="color: #666;">No categories yet.</p>';
+        return;
+      }
+
+      container.innerHTML = categories
+        .map(([category, count]) => `
+          <div style="background: #0f0f0f; border: 1px solid #222; padding: 1rem; border-radius: 4px; text-align: center;">
+            <div style="font-size: 1.5rem; font-weight: 700; color: #eb583d; margin-bottom: 0.5rem;">
+              ${count}
+            </div>
+            <div style="font-size: 0.85rem; color: #888; text-transform: uppercase; letter-spacing: 0.05em;">
+              ${category}
+            </div>
+          </div>
+        `)
+        .join("");
+    }
+    
+    // Wait for DOM to be ready
+    if (document.readyState === "loading") {
+      console.log("DOM is loading, waiting for DOMContentLoaded...");
+      document.addEventListener("DOMContentLoaded", initializeAdmin);
+    } else {
+      console.log("DOM already loaded, initializing immediately...");
+      setTimeout(initializeAdmin, 0);
+    }
+  
+  </script>
+</body>
+</html>

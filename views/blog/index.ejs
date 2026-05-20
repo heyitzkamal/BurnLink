@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="BurnLink Blog — Updates, features, and security insights about encrypted file sharing." />
+  <meta name="keywords" content="BurnLink blog, file sharing updates, encryption news, privacy" />
+  <title>Blog — BurnLink</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0a0a0a; color: #fff; line-height: 1.6; overflow-x: hidden;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+    
+    /* ── Header ── */
+    header {
+      padding: 1rem 0; border-bottom: 1px solid #1e1e1e;
+      position: sticky; top: 0; background: #0a0a0a; z-index: 100;
+    }
+    .header-content { display: flex; justify-content: space-between; align-items: center; }
+    .logo { text-decoration: none; display: flex; align-items: center; }
+    .logo img { height: 35px; width: auto; display: block; }
+    nav { display: flex; gap: 2rem; }
+    nav a { text-decoration: none; color: #666; font-size: 0.7rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; transition: color 0.2s; }
+    nav a:hover, nav a.active { color: #fff; }
+    
+    /* ── Main ── */
+    main { padding: 3rem 0 5rem; min-height: calc(100vh - 140px); }
+    
+    /* ── Blog Hero ── */
+    .blog-hero {
+      text-align: center; padding: 1rem 0 1.5rem; border-bottom: 1px solid #141414; margin-bottom: 1.5rem;
+    }
+    .blog-hero h1 {
+      font-size: clamp(1.3rem, 4vw, 2rem); font-weight: 700; letter-spacing: -0.01em;
+      line-height: 1.1; margin-bottom: 0.3rem; color: #fff;
+    }
+    .blog-hero p {
+      font-size: 0.8rem; color: #888; max-width: 500px; margin: 0 auto;
+      line-height: 1.4;
+    }
+    
+    /* ── Search ── */
+    .blog-search {
+      display: flex; gap: 1rem; margin: 0.75rem 0 1rem; justify-content: center;
+      flex-wrap: wrap;
+    }
+    .search-box {
+      position: relative; flex: 1; max-width: 300px;
+    }
+    .search-box input {
+      width: 100%; padding: 0.6rem 0.9rem; border: 1px solid #222; background: #111;
+      color: #fff; font-size: 0.8rem; font-family: inherit; border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .search-box input:focus {
+      outline: none; border-color: #eb583d; box-shadow: 0 0 0 3px rgba(235,88,61,0.1);
+    }
+    .search-results {
+      position: absolute; top: 100%; left: 0; right: 0; background: #111; border: 1px solid #222;
+      border-top: none; max-height: 300px; overflow-y: auto; display: none; z-index: 10;
+      border-radius: 0 0 4px 4px;
+    }
+    .search-results.active { display: block; }
+    .search-result-item {
+      padding: 0.75rem 1rem; border-bottom: 1px solid #1a1a1a; cursor: pointer;
+      transition: background 0.2s; text-decoration: none; display: block; 
+      color: #fff; background: transparent;
+    }
+    .search-result-item:hover { background: #1a1a1a; color: #fff; }
+    .search-result-title { font-weight: 500; color: #fff; font-size: 0.8rem; }
+    .search-result-excerpt { color: #888; font-size: 0.75rem; margin-top: 0.25rem; }
+    
+    /* ── Categories ── */
+    .blog-categories {
+      display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 1rem 0;
+      justify-content: center;
+    }
+    .category-btn {
+      padding: 0.4rem 0.8rem; border: 1px solid #333; background: transparent;
+      color: #888; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.05em;
+      cursor: pointer; transition: all 0.2s; text-transform: uppercase; border-radius: 4px;
+      display: inline-block; text-decoration: none;
+    }
+    .category-btn:hover { border-color: #eb583d; color: #eb583d; background: rgba(235,88,61,0.05); }
+    .category-btn.active { border-color: #eb583d; background: rgba(235,88,61,0.1); color: #eb583d; }
+    
+    /* ── Blog Grid (Magazine Style) ── */
+    .blog-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 2rem; margin: 3rem 0; auto-rows: max-content;
+    }
+    .blog-card {
+      border: 1px solid #1a1a1a; padding: 0;
+      transition: all 0.3s ease; position: relative;
+      display: flex; flex-direction: column; gap: 0; align-items: stretch;
+      border-radius: 8px; background: transparent; overflow: hidden;
+    }
+    .blog-card:nth-child(1) { grid-column: span 2; display: grid; grid-template-columns: 1fr 1.2fr; }
+    .blog-card:nth-child(1) .blog-card-image { height: 100%; min-height: 220px; }
+    .blog-card:nth-child(1) .blog-card-content { padding: 2rem; display: flex; flex-direction: column; justify-content: center; }
+    .blog-card:nth-child(1) .blog-card-title { font-size: 1.3rem; }
+    .blog-card:nth-child(1) .blog-card-excerpt { -webkit-line-clamp: 2; }
+    .blog-card:nth-child(n+2) .blog-card-image { height: 160px; width: 100%; }
+    .blog-card:nth-child(n+2) .blog-card-content { padding: 1.25rem; }
+    .blog-card .blog-card-image {
+      background: linear-gradient(135deg, #1a1a1a, #0f0f0f);
+      display: flex; align-items: center; justify-content: center; position: relative;
+      overflow: hidden; flex-shrink: 0; border-radius: 0;
+    }
+    .blog-card:hover {
+      border-color: #eb583d;
+      background: rgba(235,88,61,0.05); box-shadow: 0 8px 24px rgba(235,88,61,0.15);
+      transform: translateY(-4px);
+    }
+    
+    .blog-card-image {
+      width: 120px; height: 120px; background: linear-gradient(135deg, #1a1a1a, #0f0f0f);
+      display: flex; align-items: center; justify-content: center; position: relative;
+      overflow: hidden; flex-shrink: 0; border-radius: 6px;
+    }
+    .blog-card-image img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    
+    .blog-card-content { padding: 0; }
+    .blog-card-meta {
+      display: flex; gap: 1rem; font-size: 0.65rem; color: #888;
+      margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .blog-card:nth-child(1) .blog-card-meta {
+      margin-bottom: 1rem; font-size: 0.7rem;
+    }
+    .blog-card-category {
+      display: inline-block; padding: 0.2rem 0.5rem; background: rgba(235,88,61,0.1);
+      color: #eb583d; border: 1px solid #eb583d; border-radius: 3px; font-weight: 600;
+    }
+    .blog-card:nth-child(1) .blog-card-category {
+      padding: 0.3rem 0.7rem; font-size: 0.7rem; background: rgba(235,88,61,0.15);
+      border: 1px solid #eb583d;
+    }
+    .blog-card-category::before {
+      content: "◆ ";
+    }
+    .blog-card:nth-child(1) .blog-card-category::before {
+      content: "★ ";
+      color: #eb583d;
+    }
+    .blog-card-title {
+      font-size: 1rem; font-weight: 600; margin: 0.5rem 0; line-height: 1.3;
+      color: #fff;
+    }
+    .blog-card-excerpt {
+      font-size: 0.8rem; color: #999; margin-bottom: 0.75rem; line-height: 1.5;
+      display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .blog-card-footer {
+      display: flex; justify-content: flex-start; align-items: center;
+      gap: 1rem; border-top: none; padding-top: 0;
+    }
+    .blog-card-read-time {
+      font-size: 0.7rem; color: #777;
+    }
+    .blog-card-link {
+      color: #eb583d; text-decoration: none; font-weight: 600; font-size: 0.75rem;
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      transition: gap 0.2s;
+    }
+    .blog-card-link:hover { gap: 0.5rem; }
+    .blog-card-link::after { content: "→"; }
+    
+    /* ── Featured Section ── */
+    .featured-post {
+      display: none;
+    }
+    
+    /* ── Pagination ── */
+    .pagination {
+      display: flex; justify-content: center; align-items: center; gap: 0.3rem;
+      margin: 2rem 0 1rem;
+    }
+    .pagination a, .pagination span {
+      padding: 0.4rem 0.6rem; border: 1px solid #333; color: #888;
+      text-decoration: none; font-size: 0.75rem; transition: all 0.2s;
+    }
+    .pagination a:hover { border-color: #eb583d; color: #eb583d; }
+    .pagination .current {
+      border-color: #eb583d; background: transparent; color: #eb583d;
+    }
+    
+    /* ── Footer ── */
+    footer { border-top: 1px solid #1e1e1e; padding: 2rem 0; }
+    .footer-content { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem; }
+    .footer-section h3 { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; margin-bottom: 0.75rem; color: #666; }
+    .footer-section a { display: block; color: #888; text-decoration: none; font-size: 0.8rem; margin-bottom: 0.4rem; transition: color 0.2s; }
+    .footer-section a:hover { color: #fff; }
+    .footer-bottom { border-top: 1px solid #1e1e1e; padding-top: 1rem; color: #555; font-size: 0.75rem; }
+    
+    @media (max-width: 768px) {
+      nav { gap: 1rem; }
+      .blog-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+      .blog-card { flex-direction: column; }
+      .blog-card:nth-child(1) { grid-column: span 1; grid-template-columns: 1fr; }
+      .blog-card:nth-child(1) .blog-card-image { height: 200px; min-height: 200px; }
+      .blog-card:nth-child(1) .blog-card-content { padding: 1.5rem; }
+      .blog-card:nth-child(1) .blog-card-title { font-size: 1.1rem; }
+      .blog-card:nth-child(n+2) .blog-card-image { height: 150px; }
+      .blog-card-image { width: 100%; }
+      .featured-post { grid-template-columns: 1fr; gap: 1rem; }
+      .featured-post-image { width: 100%; height: 150px; }
+      .featured-post h2 { font-size: 0.9rem; }
+      main { padding: 1rem 0; }
+      .blog-hero { padding: 0.75rem 0 1rem; }
+      .blog-hero h1 { font-size: 1.1rem; }
+      .blog-search { margin: 0.5rem 0 0.75rem; }
+      .blog-categories { margin: 0.75rem 0; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <a href="/" class="logo"><img src="/logo1.png" alt="BurnLink" /></a>
+        <nav>
+          <a href="/">Home</a>
+          <a href="/blog" class="active">Blog</a>
+          <a href="/about">About</a>
+          <a href="/changelog">Changelog</a>
+          <a href="/roadmap">Roadmap</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <div class="blog-hero">
+        <h1><span style="color: #eb583d;">BurnLink</span> Blog</h1>
+        <p>Latest updates, security insights, and feature announcements from the BurnLink team</p>
+      </div>
+
+      <div class="blog-search">
+        <div class="search-box">
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Search posts..."
+            aria-label="Search blog posts"
+          />
+          <div id="searchResults" class="search-results"></div>
+        </div>
+      </div>
+
+      <div class="blog-categories">
+        <a href="/blog" class="category-btn <%= category === null || category === undefined ? 'active' : '' %>">All Posts</a>
+        <a href="/blog?category=updates" class="category-btn <%= category === 'updates' ? 'active' : '' %>">Updates</a>
+        <a href="/blog?category=security" class="category-btn <%= category === 'security' ? 'active' : '' %>">Security</a>
+        <a href="/blog?category=features" class="category-btn <%= category === 'features' ? 'active' : '' %>">Features</a>
+        <a href="/blog?category=tutorials" class="category-btn <%= category === 'tutorials' ? 'active' : '' %>">Tutorials</a>
+      </div>
+
+      <% if (posts && posts.length > 0) { %>
+        <% if (posts[0]?.featured) { %>
+          <article class="featured-post">
+            <div class="featured-post-content">
+              <span class="featured-post-label">Featured</span>
+              <h2><%= posts[0].title %></h2>
+              <p><%= posts[0].excerpt %></p>
+              <div class="featured-post-meta">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <img src="/logo1.png" alt="BurnLink" style="width: 24px; height: 24px; border-radius: 50%; object-fit: contain;" />
+                  <span><%= posts[0].author %></span>
+                </div>
+                <span><%= new Date(posts[0].published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></span>
+                <% if (posts[0].reading_time) { %>
+                  <span><%= posts[0].reading_time %> min read</span>
+                <% } %>
+              </div>
+              <a href="/blog/<%= posts[0].slug %>">Read Article</a>
+            </div>
+            <div class="featured-post-image">
+              <% if (posts[0].featured_image) { %>
+                <img src="<%= posts[0].featured_image %>" alt="<%= posts[0].title %>" />
+              <% } %>
+            </div>
+          </article>
+        <% } %>
+
+        <div class="blog-grid">
+          <% posts.forEach(post => { %>
+            <article class="blog-card">
+              <div class="blog-card-image">
+                <% if (post.featured_image) { %>
+                  <img src="<%= post.featured_image %>" alt="<%= post.title %>" />
+                <% } %>
+              </div>
+              <div class="blog-card-content">
+                <div class="blog-card-meta">
+                  <span class="blog-card-category"><%= post.category %></span>
+                  <span class="blog-card-date"><%= new Date(post.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %></span>
+                </div>
+                <h3 class="blog-card-title"><%= post.title %></h3>
+                <p class="blog-card-excerpt"><%= post.excerpt %></p>
+                <div class="blog-card-footer">
+                  <span class="blog-card-read-time">
+                    <% if (post.reading_time) { %>
+                      <%= post.reading_time %> min read
+                    <% } %>
+                  </span>
+                  <a href="/blog/<%= post.slug %>" class="blog-card-link">Read</a>
+                </div>
+              </div>
+            </article>
+          <% }); %>
+        </div>
+
+        <% if (totalPages > 1) { %>
+          <div class="pagination">
+            <% 
+              const categoryParam = category ? `&category=${category}` : '';
+            %>
+            <% if (currentPage > 1) { %>
+              <a href="?page=1<%= categoryParam %>">First</a>
+              <a href="?page=<%= currentPage - 1 %><%= categoryParam %>">←</a>
+            <% } %>
+
+            <% for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) { %>
+              <% if (i === currentPage) { %>
+                <span class="current"><%= i %></span>
+              <% } else { %>
+                <a href="?page=<%= i %><%= categoryParam %>"><%= i %></a>
+              <% } %>
+            <% } %>
+
+            <% if (currentPage < totalPages) { %>
+              <a href="?page=<%= currentPage + 1 %><%= categoryParam %>">→</a>
+              <a href="?page=<%= totalPages %><%= categoryParam %>">Last</a>
+            <% } %>
+          </div>
+        <% } %>
+      <% } else { %>
+        <div style="text-align: center; padding: 3rem 0; color: #666;">
+          <p>No blog posts yet. Check back soon!</p>
+        </div>
+      <% } %>
+    </div>
+  </main>
+
+  <%- include("../partials/footer") %>
+
+  <script nonce="<%= cspNonce %>">
+    // ── Helper function to escape HTML ──
+    function escapeHtml(text) {
+      const map = {
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      };
+      return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    // ── Optimized Blog Search Engine ──
+    function initializeSearch() {
+      let searchCache = {};
+      let searchTimeout = null;
+      
+      // Search Input Handler with Debouncing
+      const searchInput = document.getElementById("searchInput");
+      const searchResults = document.getElementById("searchResults");
+
+      if (!searchInput || !searchResults) {
+        console.error("Search elements not found");
+        return;
+      }
+
+      searchInput.addEventListener("input", (e) => {
+        const query = e.target.value.trim();
+
+        // Clear previous timeout
+        clearTimeout(searchTimeout);
+
+        if (query.length < 2) {
+          searchResults.classList.remove("active");
+          return;
+        }
+
+        // Show loading indicator
+        searchResults.innerHTML = '<div style="padding: 1rem; color: #666; text-align: center;">Searching...</div>';
+        searchResults.classList.add("active");
+
+        // Debounce search - wait 300ms after user stops typing
+        searchTimeout = setTimeout(async () => {
+          try {
+            // Check cache first
+            if (searchCache[query]) {
+              displaySearchResults(searchCache[query]);
+              return;
+            }
+
+            const response = await fetch(`/api/blog/search/posts?q=${encodeURIComponent(query)}`);
+            const results = await response.json();
+
+            // Cache results
+            searchCache[query] = results;
+            displaySearchResults(results);
+          } catch (err) {
+            console.error("Search error:", err);
+            searchResults.innerHTML = '<div style="padding: 1rem; color: #c76b6b; text-align: center;">Search failed</div>';
+          }
+        }, 300); // Debounce delay - reduces API calls
+      });
+
+      function displaySearchResults(results) {
+        if (results.length > 0) {
+          searchResults.innerHTML = results
+            .map(
+              (post) => `
+              <a href="/blog/${post.slug}" class="search-result-item">
+                <div class="search-result-title">${escapeHtml(post.title)}</div>
+                <div class="search-result-excerpt">${escapeHtml(post.excerpt)}</div>
+              </a>
+            `
+            )
+            .join("");
+          searchResults.classList.add("active");
+        } else {
+          searchResults.innerHTML = '<div style="padding: 1rem; color: #666; text-align: center;">No results found</div>';
+          searchResults.classList.add("active");
+        }
+      }
+
+      // Close search results when clicking outside
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest(".search-box")) {
+          searchResults.classList.remove("active");
+        }
+      });
+    }
+
+    // Initialize search when DOM is ready
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initializeSearch);
+    } else {
+      initializeSearch();
+    }
+
+    // ── Category Filtering ──
+    // No need for JS - category buttons are now links with active state set in template
+  </script></body>
+</html>
