@@ -1,7 +1,36 @@
+# BurnLink robots.txt
+# Search engine crawling and indexing guidelines
+
+# Allow all bots
 User-agent: *
 Allow: /
 Allow: /about
+Allow: /changelog
+Allow: /roadmap
+Allow: /security-policy
+Allow: /hall-of-fame
+
+# Disallow private/sensitive paths
 Disallow: /file/
 Disallow: /s/
 Disallow: /api/
+Disallow: /.env
+Disallow: /admin
+Disallow: /tmp
+Disallow: /logs
+
+# Sitemap location
 Sitemap: https://burnlink.page/sitemap.xml
+
+# Crawl delay (be nice to our server)
+Crawl-delay: 1
+
+# Specific crawlers
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+

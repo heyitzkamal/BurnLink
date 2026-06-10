@@ -200,6 +200,125 @@ router.get("/search/posts", async (req, res) => {
   }
 });
 
+// --- RECOMMENDATION & SEO ROUTES ---
+
+// Get recommended posts based on search query (for social media suggestions)
+router.get("/api/recommendations", async (req, res) => {
+  try {
+    const searchQuery = req.query.q || req.query.search;
+    const limit = Math.min(parseInt(req.query.limit) || 5, 10);
+
+    if (!searchQuery) {
+      // Return featured posts if no query
+      const { data: posts } = await require("../lib/supabase")
+        .from("blog_posts")
+        .select("id, title, slug, excerpt, featured_image, category, tags")
+        .eq("status", "published")
+        .eq("featured", true)
+        .limit(limit);
+      
+      return res.json({ posts: posts || [] });
+    }
+
+    // Track the search query for analytics
+    const { trackSearchQuery, getRecommendedPosts } = require("../lib/seo-recommendations");
+    trackSearchQuery(searchQuery, "api-recommendation");
+
+    // Get recommended posts
+    const posts = await getRecommendedPosts(searchQuery, limit);
+    
+    res.json({ 
+      query: searchQuery,
+      posts: posts || [],
+      count: (posts || []).length
+    });
+  } catch (err) {
+    console.error("Error getting recommendations:", err);
+    res.status(500).json({ error: "Failed to get recommendations" });
+  }
+});
+
+// Get social media metadata for a post
+router.get("/api/share/:slug", async (req, res) => {
+  try {
+    const { getRecommendationData } = require("../lib/seo-recommendations");
+    const platform = req.query.platform || "generic";
+
+    const metadata = await getRecommendationData(req.params.slug, platform);
+    
+    if (!metadata) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
+    // Return platform-specific metadata
+    if (metadata[platform]) {
+      res.json(metadata[platform]);
+    } else {
+      res.json(metadata.generic);
+    }
+  } catch (err) {
+    console.error("Error getting share metadata:", err);
+    res.status(500).json({ error: "Failed to get share metadata" });
+  }
+});
+
+// Track burnlink search query (for analytics)
+router.post("/api/track-search", async (req, res) => {
+  try {
+    const { query, platform } = req.body;
+    
+    if (!query) {
+      return res.status(400).json({ error: "Search query required" });
+    }
+
+    const { trackSearchQuery } = require("../lib/seo-recommendations");
+    await trackSearchQuery(query, platform || "social-media");
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Error tracking search:", err);
+    res.status(500).json({ error: "Failed to track search" });
+  }
+});
+
+// Get trending burnlink searches
+router.get("/api/trending-searches", async (req, res) => {
+  try {
+    const days = Math.min(parseInt(req.query.days) || 7, 30);
+    const { getTrendingSearches } = require("../lib/seo-recommendations");
+    
+    const trending = await getTrendingSearches(days);
+    
+    res.json({ 
+      trending,
+      period: `${days} days`
+    });
+  } catch (err) {
+    console.error("Error getting trending searches:", err);
+    res.status(500).json({ error: "Failed to get trending searches" });
+  }
+});
+
+// Get all available categories with search data
+router.get("/api/categories-with-stats", async (req, res) => {
+  try {
+    const supabase = require("../lib/supabase");
+    
+    const { data: categories, error } = await supabase
+      .from("blog_posts")
+      .select("category, count(*) as count, max(published_at) as latest")
+      .eq("status", "published")
+      .group_by("category");
+
+    if (error) throw error;
+
+    res.json(categories || []);
+  } catch (err) {
+    console.error("Error fetching categories with stats:", err);
+    res.status(500).json({ error: "Failed to fetch categories" });
+  }
+});
+
 // --- ADMIN ROUTES ---
 
 // Simple token test endpoint (no database needed)

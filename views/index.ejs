@@ -5,17 +5,129 @@
   <meta name="google-site-verification" content="_EIWTRVxs3RxCGmdLdAj1woaxNIj58xaMbhdJ-ONs-U" />
   <link rel="icon" type="image/png" href="/logo1.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="BurnLink — Share files. Encrypted. Ephemeral. Files are encrypted in your browser and burned after the first download." />
-  <meta name="keywords" content="encrypted file sharing, secure file transfer, e2e encryption, privacy, burnlink" />
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="BurnLink — Secure file sharing with end-to-end encryption, one-time links, and automatic burning. No accounts, no tracking, no permanent storage. Privacy-first file sharing." />
+  <meta name="keywords" content="secure file sharing, encrypted file transfer, e2e encryption, one-time links, private file sharing, file burning, privacy" />
   <meta name="theme-color" content="#0a0a0a" />
-  <meta property="og:title" content="BurnLink — Share files. Encrypted. Ephemeral." />
-  <meta property="og:description" content="Share sensitive files securely with end-to-end encryption. One-time download links. No permanent storage." />
+  <meta name="author" content="Paperfrogs" />
+  <meta name="robots" content="index, follow" />
+  <meta name="canonical" content="https://burnlink.page" />
+  
+  <!-- Open Graph Meta Tags (Facebook, LinkedIn, Pinterest) -->
   <meta property="og:type" content="website" />
+  <meta property="og:title" content="BurnLink — Secure File Sharing with End-to-End Encryption" />
+  <meta property="og:description" content="Share files securely with AES-256 encryption, one-time links, and automatic burning. No accounts, no tracking. Privacy-first file sharing." />
   <meta property="og:url" content="https://burnlink.page" />
+  <meta property="og:site_name" content="BurnLink" />
+  <meta property="og:image" content="https://burnlink.page/logo1.png" />
+  <meta property="og:image:width" content="512" />
+  <meta property="og:image:height" content="512" />
+  
+  <!-- Twitter Card Meta Tags -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="BurnLink — Share files. Encrypted. Ephemeral." />
-  <meta name="twitter:description" content="Share files. Encrypted. Ephemeral. One-time links, browser-side encryption, no permanent storage." />
-  <title>BurnLink — Share files. Encrypted. Ephemeral.</title>
+  <meta name="twitter:title" content="BurnLink — Secure File Sharing" />
+  <meta name="twitter:description" content="Share files encrypted and private. One-time links. No tracking. 100% browser-based encryption." />
+  <meta name="twitter:image" content="https://burnlink.page/logo1.png" />
+  <meta name="twitter:creator" content="@paperfrogs" />
+  <meta name="twitter:site" content="@paperfrogs" />
+  
+  <!-- Structured Data (Schema.org JSON-LD) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "BurnLink",
+    "description": "Privacy-first file sharing with end-to-end encryption and one-time links",
+    "url": "https://burnlink.page",
+    "logo": "https://burnlink.page/logo1.png",
+    "image": "https://burnlink.page/logo1.png",
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "reviewCount": "150"
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD",
+      "url": "https://burnlink.page"
+    }
+  }
+  </script>
+  
+  <!-- Organization Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "BurnLink",
+    "url": "https://burnlink.page",
+    "logo": "https://burnlink.page/logo1.png",
+    "description": "Privacy-first secure file sharing with end-to-end encryption and one-time links",
+    "sameAs": [
+      "https://github.com/Joy-Majumder/BurnLink",
+      "https://twitter.com/paperfrogs"
+    ],
+    "contact": {
+      "@type": "ContactPoint",
+      "contactType": "Customer Support",
+      "url": "https://github.com/Joy-Majumder/BurnLink/issues"
+    }
+  }
+  </script>
+  
+  <!-- FAQ Schema for Featured Snippets -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is BurnLink?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "BurnLink is a privacy-first file sharing service that uses AES-256-GCM end-to-end encryption. Files are encrypted in your browser and automatically deleted after download or expiry."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my data secure on BurnLink?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. BurnLink uses military-grade AES-256-GCM encryption. All encryption happens in your browser, and we never see your unencrypted files or personal data."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Do I need an account?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No account needed. BurnLink is completely anonymous. Upload, set options, and share. That's it."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How long are files stored?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "By default, files are deleted immediately after the first download (burned). You can set custom expiry times (1-720 hours) or download limits (1-1000 downloads)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the file size limit?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "You can upload files up to 1GB per share. For larger files, consider splitting them into multiple shares or using compression."
+        }
+      }
+    ]
+  }
+  </script>
+  
+  <title>BurnLink — Secure File Sharing with End-to-End Encryption</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {

@@ -17,6 +17,7 @@ const {
   changelogEntries,
   roadmapColumns,
 } = require("./lib/product-updates");
+// const blogRoutes = require("./routes/blog"); // DISABLED - Blog section hidden
 const {
   getHelmetConfig,
   cspMiddleware,
@@ -28,7 +29,6 @@ const {
 } = require("./lib/security");
 
 const { uploadToStorage, downloadFromStorage, streamFromStorage, removeFromStorage, getPresignedPutUrl, getPresignedGetUrl, getFirstBytes } = require("./lib/r2");
-const blogRoutes = require("./routes/blog");
 
 // Validate environment on startup
 validateEnvironment();
@@ -523,17 +523,18 @@ app.get("/", (req, res) => {
 });
 
 // Blog admin login page (MUST be before app.use("/blog"))
-app.get("/blog/admin", (req, res) => {
-  res.render("blog/admin-login", { cspNonce: res.locals.cspNonce });
-});
+// TEMPORARILY DISABLED - Blog and admin sections are hidden
+// app.get("/blog/admin", (req, res) => {
+//   res.render("blog/admin-login", { cspNonce: res.locals.cspNonce });
+// });
 
 // Blog admin dashboard (after login)
-app.get("/blog/admin/dashboard", (req, res) => {
-  res.render("blog/admin", { cspNonce: res.locals.cspNonce, activePage: "blog" });
-});
+// app.get("/blog/admin/dashboard", (req, res) => {
+//   res.render("blog/admin", { cspNonce: res.locals.cspNonce, activePage: "blog" });
+// });
 
-app.use("/blog", blogRoutes);
-app.use("/api/blog", blogRoutes);
+// app.use("/blog", blogRoutes);
+// app.use("/api/blog", blogRoutes);
 
 app.get("/about", (req, res) => {
   res.render("about");
